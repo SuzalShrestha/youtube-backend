@@ -56,8 +56,14 @@ userSchema.pre("save", function (next) {
     this.password = bcrypt.hashSync(this.password, 10);
     next();
 });
+userSchema.methods.isPasswordCorrect = async function (password: string) {
+    return await bcrypt.compare(password, this.password);
+};
 userSchema.methods.getAccessToken = function () {
-    jwt.sign(
+    if (!process.env.ACCESS_TOKEN_SECRET) {
+        throw new Error("ACCESS_TOKEN_SECRET is not defined");
+    }
+    return jwt.sign(
         {
             _id: this._id,
             userName: this.userName,
@@ -71,6 +77,9 @@ userSchema.methods.getAccessToken = function () {
     );
 };
 userSchema.methods.getExpiryToken = function () {
+    if (!process.env.REFRESH_TOKEN_SECRET) {
+        throw new Error("ACCESS_TOKEN_SECRET is not defined");
+    }
     jwt.sign(
         {
             _id: this._id,
