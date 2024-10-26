@@ -1,10 +1,14 @@
 import { Request, Response } from "express";
 
 import { User } from "../models/user.model";
+import { ApiResponse } from "../utils/api.response";
 import { asyncHandler } from "../utils/async.handler";
 import { uploadOnCloudinary } from "../utils/cloudinary";
 import ApiError from "../utils/error.handler";
 
+type avatar = {
+    [fieldname: string]: Express.Multer.File[];
+};
 const registerUser = asyncHandler(async (req: Request, res: Response) => {
     //get user from frontend
     //validate the data
@@ -34,13 +38,30 @@ const registerUser = asyncHandler(async (req: Request, res: Response) => {
             "User with same email or username already exists"
         );
     }
-    const avatarLocalPath = req.files?.avatar[0]?.path;
-    const coverImageLocalPath = req.file?.coverImage[0]?.path; //cover image is optional
+    const files = req.files as avatar;
+    const avatarLocalPath = files?.avatar?.[0]?.path;
+    const coverImageLocalPath = files?.coverImage?.[0]?.path; //cover image is optional
     if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar is required");
     }
     const avatar = await uploadOnCloudinary(avatarLocalPath);
-
-    if (coverImageLocalPath) await uploadOnCloudinary(coverImageLocalPath);
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+    const user = await User.create({
+        fullName,
+        email,
+        password,
+        userName: userName.toLowerCase(),
+        coverImage: coverImage?.url || "",
+        avatar: avatar?.url,
+    });
+    const createdUser = await User.findById(user._id).select(
+        "-password -refreshToken"
+    );
+    if (!createdUser) {
+        throw new ApiError(500, "Cannot create user");
+    }
+    res.status(201).json(
+        new ApiResponse(200, "User registered successfully", createdUser)
+    );
 });
 export { registerUser };
