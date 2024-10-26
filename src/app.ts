@@ -2,6 +2,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 
+import errorHandler from "./middlewares/error.middleware";
 //routes import
 import userRouter from "./routes/user.route";
 
@@ -30,4 +31,5 @@ app.get("/", (req, res) => {
     res.send("Hello World!");
 });
 app.use("/api/v1/users", userRouter);
+app.use(errorHandler);
 export { app };
