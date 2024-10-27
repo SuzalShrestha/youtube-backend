@@ -76,9 +76,9 @@ userSchema.methods.getAccessToken = function () {
         }
     );
 };
-userSchema.methods.getExpiryToken = function () {
+userSchema.methods.getRefreshToken = function () {
     if (!process.env.REFRESH_TOKEN_SECRET) {
-        throw new Error("ACCESS_TOKEN_SECRET is not defined");
+        throw new Error("REFRESH_TOKEN_SECRET is not defined");
     }
     jwt.sign(
         {
