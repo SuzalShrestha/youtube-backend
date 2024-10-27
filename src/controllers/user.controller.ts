@@ -1,6 +1,6 @@
-import bcrypt from "bcrypt";
 import { NextFunction, Request, Response } from "express";
 import fs from "fs";
+import jwt from "jsonwebtoken";
 
 import { User } from "../models/user.model";
 import ApiError from "../utils/api.error";
@@ -114,6 +114,7 @@ const registerUser = asyncHandler(
         }
     }
 );
+
 const loginUser = asyncHandler(async (req: Request, res: Response) => {
     const { userName, email, password } = req.body;
     if (!userName && !email) {
@@ -156,12 +157,14 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
             })
         );
 });
-const logoutUser = (req: Request, res: Response) => {
-    const user = User.findByIdAndUpdate(
+
+const logoutUser = async (req: Request, res: Response) => {
+    const user = await User.findByIdAndUpdate(
+        //@ts-ignore
         req?.user?._id,
         {
-            $set: {
-                accessToken: undefined,
+            $unset: {
+                refreshToken: 1,
             },
         },
         {
@@ -173,6 +176,59 @@ const logoutUser = (req: Request, res: Response) => {
         httpOnly: true,
         secure: true,
     };
-    res.status(200).clearCookie("accessToken", options);
+    res.status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json(new ApiResponse(200, "User Logged Out", {}));
 };
-export { registerUser, loginUser, logoutUser };
+
+const refreshAccessToken = async (req: Request, res: Response) => {
+    const incomingRefreshToken =
+        req.cookies.refreshToken || req.body.refreshToken;
+    if (!incomingRefreshToken) {
+        throw new ApiError(400, "Unauthorized Access");
+    }
+    try {
+        const decodedData = jwt.verify(
+            incomingRefreshToken,
+            //@ts-ignore
+            process.env.REFRESH_TOKEN_SECRET
+        );
+        if (!decodedData) {
+            throw new ApiError(400, "Invalid Token");
+        }
+        //@ts-ignore
+        const user = await User.findById(decodedData?._id);
+        if (!user) throw new ApiError(400, "User Not Found");
+        //@ts-ignore
+        if (incomingRefreshToken !== user?.refreshToken) {
+            throw new ApiError(400, "Invalid Token");
+        }
+        const { refreshToken, accessToken } =
+            await generateAccessAndRefreshToken(
+                //@ts-ignore
+                user?._id
+            );
+        const options = {
+            httpOnly: true,
+            secure: true,
+        };
+        res.status(200)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", refreshAccessToken, options)
+            .json(
+                new ApiResponse(200, "Access Token Refreshed ", {
+                    accessToken,
+                    refreshToken,
+                })
+            );
+    } catch (error) {
+        throw new ApiError(
+            500,
+            //@ts-ignore
+            error?.message || "Invalid Token"
+        );
+    }
+};
+
+export { registerUser, loginUser, logoutUser, refreshAccessToken };

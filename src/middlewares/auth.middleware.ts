@@ -12,22 +12,31 @@ const verifyJWT = async (
     try {
         const token =
             req.cookies?.accessToken ||
+            //@ts-ignore
             req?.header("Authorization")?.replace("Bearer ", "");
 
         if (!token) throw new ApiError(400, "Authorization failed");
-
-        const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-
+        //@ts-ignore
+        const decodedToken = jwt.verify(
+            token,
+            //@ts-ignore
+            process.env.ACCESS_TOKEN_SECRET
+        );
+        //@ts-ignore
         const user = await User.findById(decodedToken?._id).select(
             "-password -refreshToken"
         );
         if (!user) {
             throw new ApiError(401, "Invalid access token");
         }
+        //@ts-ignore
         req.user = user;
         next();
     } catch (error) {
-        throw new ApiError(401, error?.message || "Invalid access token");
+        throw new ApiError(
+            401,
+            (error as Error)?.message || "Invalid access token"
+        );
     }
 };
 

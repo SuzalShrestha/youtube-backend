@@ -8,7 +8,7 @@
     "emitDecoratorMetadata": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "types": ["./app/types/express.d.ts", "./app/types/socket.d.ts"],
+    "types": ["./src/types/express.d.ts", "./src/types/socket.d.ts"],
     "strictPropertyInitialization": false
   },
   "include": ["src/**/*"],
