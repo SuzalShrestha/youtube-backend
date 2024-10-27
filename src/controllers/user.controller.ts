@@ -22,10 +22,8 @@ const generateAccessAndRefreshToken = async (user_id: string) => {
         }
         //@ts-ignore
         const accessToken = user.getAccessToken();
-        console.log(accessToken);
         //@ts-ignore
         const refreshToken = user.getRefreshToken();
-        console.log(refreshToken);
 
         user.refreshToken = refreshToken;
         await user.save({ validateBeforeSave: false });
@@ -37,12 +35,12 @@ const generateAccessAndRefreshToken = async (user_id: string) => {
 };
 const removeFiles = (files: avatar) => {
     try {
+        console.log("Removing files");
         fs.unlinkSync(files?.avatar[0]?.path);
         fs.unlinkSync(files?.coverImage[0]?.path);
     } catch (error) {
         console.error("Error removing files:", error);
     }
-    // console.log("removing files");
 };
 const registerUser = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
