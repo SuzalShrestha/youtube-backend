@@ -156,4 +156,23 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
             })
         );
 });
-export { registerUser, loginUser };
+const logoutUser = (req: Request, res: Response) => {
+    const user = User.findByIdAndUpdate(
+        req?.user?._id,
+        {
+            $set: {
+                accessToken: undefined,
+            },
+        },
+        {
+            new: true,
+        }
+    );
+    if (!user) throw new ApiError(400, "Invalid token");
+    const options = {
+        httpOnly: true,
+        secure: true,
+    };
+    res.status(200).clearCookie("accessToken", options);
+};
+export { registerUser, loginUser, logoutUser };
