@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import fs from "fs";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
 import { User } from "../models/user.model";
 import { MFiles, MObjectId, TDeRefreshToken } from "../types/express";
@@ -28,6 +28,7 @@ const generateAccessAndRefreshToken = async (user_id: MObjectId) => {
         throw new ApiError(500, "Something went wrong with generating tokens");
     }
 };
+
 const removeFiles = (files: MFiles | undefined) => {
     try {
         console.log("Removing files");
@@ -38,6 +39,7 @@ const removeFiles = (files: MFiles | undefined) => {
         console.error("Error removing files:", error);
     }
 };
+
 const registerUser = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
         try {
@@ -283,6 +285,7 @@ const updateAvatar = asyncHandler(async (req: Request, res: Response) => {
         .status(200)
         .json(new ApiResponse(200, "Avatar Updated Successfully", user));
 });
+
 const updateCoverImage = asyncHandler(async (req: Request, res: Response) => {
     const coverImageLocalPath = req.file?.path;
     if (!coverImageLocalPath) throw new ApiError(400, "Avatar required");
@@ -304,6 +307,74 @@ const updateCoverImage = asyncHandler(async (req: Request, res: Response) => {
         .status(200)
         .json(new ApiResponse(200, "Cover Image Updated Successfully", user));
 });
+
+const getUserChannel = asyncHandler(async (req: Request, res: Response) => {
+    const { userName } = req.params;
+    if (!userName?.trim()) {
+        throw new ApiError(400, "Username Is Required");
+    }
+    const channel = await User.aggregate([
+        {
+            $match: {
+                userName: userName?.toLowerCase(),
+            },
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers",
+            },
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribedTo",
+            },
+        },
+        {
+            $addFields: {
+                subscribersCount: {
+                    $size: "$subscribers",
+                },
+                channelSubscribedToCount: {
+                    $size: "$subscribedTo",
+                },
+                isSubscribed: {
+                    $cond: {
+                        if: {
+                            $in: [req?.user?._id, "$subscribers.subscriber"],
+                        },
+                        then: true,
+                        else: false,
+                    },
+                },
+            },
+        },
+        {
+            $project: {
+                fullName: 1,
+                userName: 1,
+                subscribersCount: 1,
+                channelSubscribedToCount: 1,
+                isSubscribed: 1,
+                avatar: 1,
+                coverImage: 1,
+                email: 1,
+            },
+        },
+    ]);
+    if (!channel?.length) {
+        throw new ApiError(404, "Channel Not Found");
+    }
+    return res
+        .status(200)
+        .json(new ApiResponse(200, "Channel Fetched Successfully", channel[0]));
+});
+
 export {
     registerUser,
     loginUser,
@@ -314,4 +385,5 @@ export {
     updateAccountDetails,
     updateAvatar,
     updateCoverImage,
+    getUserChannel,
 };
