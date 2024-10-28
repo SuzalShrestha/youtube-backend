@@ -283,10 +283,26 @@ const updateAccountDetails = asyncHandler(
 );
 
 const updateAvatar = asyncHandler(async (req: Request, res: Response) => {
-    //file from multer
-    //upload to cloudinary
-    //save to db
-    //return
+    //@ts-ignore
+    const avatarLocalPath = req.files?.avatar?.[0]?.path;
+    if (!avatarLocalPath) throw new ApiError(400, "Avatar required");
+    const avatar = await uploadOnCloudinary(avatarLocalPath);
+    if (!avatar?.url) throw new ApiError(500, "Error Uploading To Cloudinary");
+    const user = await User.findByIdAndUpdate(
+        //@ts-ignore
+        req?.user?._id,
+        {
+            $set: {
+                avatar: avatar?.url,
+            },
+        },
+        {
+            new: true,
+        }
+    );
+    return res
+        .status(200)
+        .json(new ApiResponse(200, "Avatar Updated Successfully", user));
 });
 export {
     registerUser,
@@ -296,4 +312,5 @@ export {
     changePassword,
     getCurrentUser,
     updateAccountDetails,
+    updateAvatar,
 };
