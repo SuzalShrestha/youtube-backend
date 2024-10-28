@@ -2,7 +2,9 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import mongoose, { Schema } from "mongoose";
 
-const userSchema = new Schema(
+import { UserMethods, UserType } from "../schemas/user.schemas";
+
+const userSchema = new Schema<UserType & UserMethods>(
     {
         userName: {
             type: String,

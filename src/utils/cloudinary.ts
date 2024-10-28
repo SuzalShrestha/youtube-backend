@@ -1,7 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
-import fs from "fs";
 
-const uploadOnCloudinary = async (localFilePath: string) => {
+const uploadOnCloudinary = async (localFilePath: string | undefined) => {
     try {
         cloudinary.config({
             cloud_name: process.env.CLOUDINARY_CLOUD_NAME,

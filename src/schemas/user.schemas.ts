@@ -1,12 +1,19 @@
-import z from "zod";
+import mongoose from "mongoose";
 
-export const userSchema = z.object({
-    userName: z.string(),
-    email: z.string().email(),
-    password: z.string(),
-    fullName: z.string(),
-    avatar: z.string(),
-    coverImage: z.string(),
-});
+export interface UserType {
+    _id: mongoose.Types.ObjectId;
+    userName: string;
+    email: string;
+    password: string;
+    fullName: string;
+    avatar: string;
+    coverImage?: string;
+    refreshToken?: string;
+    watchHistory: mongoose.Types.ObjectId[];
+}
 
-export type userType = z.infer<typeof userSchema>;
+export interface UserMethods {
+    isPasswordCorrect(password: string): Promise<boolean>;
+    getAccessToken(): string;
+    getRefreshToken(): string;
+}
