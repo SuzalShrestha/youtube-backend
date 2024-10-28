@@ -14,6 +14,7 @@ type coverImageType = {
 type avatar = {
     [fieldname: string]: Express.Multer.File[];
 };
+
 const generateAccessAndRefreshToken = async (user_id: string) => {
     try {
         const user = await User.findById(user_id);
@@ -231,4 +232,68 @@ const refreshAccessToken = async (req: Request, res: Response) => {
     }
 };
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken };
+const changePassword = asyncHandler(async (req: Request, res: Response) => {
+    const { newPassword, oldPassword } = req.body;
+    //@ts-ignore
+    const user = await User.findById(req.user?._id);
+    if (!user) throw new ApiError(400, "Invalid Token");
+    const isPasswordCorrect = user.isPasswordCorrect(oldPassword);
+    if (!isPasswordCorrect) throw new ApiError(400, "Invalid Password");
+    user.password = newPassword;
+    await user.save({ validateBeforeSave: false });
+    return res
+        .status(200)
+        .json(new ApiResponse(200, "Passsword Changed Successfully", {}));
+});
+
+const getCurrentUser = asyncHandler(async (req: Request, res: Response) => {
+    //@ts-ignore
+    const userId = req?.user?._id;
+    if (!userId) throw new ApiError(400, "Invalid User");
+    const user = await User.findById(userId).select("-password -refreshToken");
+    return res.status(200).json(new ApiResponse(200, "User Found", user));
+});
+
+const updateAccountDetails = asyncHandler(
+    async (req: Request, res: Response) => {
+        const { fullName, email } = req.body;
+        if (!(fullName || email)) {
+            throw new ApiError(400, "All Fields Are Required");
+        }
+        //@ts-ignore
+        const userId = req?.user?._id;
+        const user = await User.findByIdAndUpdate(
+            userId,
+            {
+                $set: {
+                    fullName,
+                    email,
+                },
+            },
+            {
+                new: true,
+            }
+        ).select("-password -refreshTokens");
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(200, "User Details Updated Successfully", user)
+            );
+    }
+);
+
+const updateAvatar = asyncHandler(async (req: Request, res: Response) => {
+    //file from multer
+    //upload to cloudinary
+    //save to db
+    //return
+});
+export {
+    registerUser,
+    loginUser,
+    logoutUser,
+    refreshAccessToken,
+    changePassword,
+    getCurrentUser,
+    updateAccountDetails,
+};
