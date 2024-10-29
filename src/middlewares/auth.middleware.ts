@@ -4,12 +4,9 @@ import jwt from "jsonwebtoken";
 import { User } from "../models/user.model";
 import { TDeAccessToken } from "../types/express";
 import ApiError from "../utils/api.error";
+import { asyncHandler } from "../utils/async.handler";
 
-const verifyJWT = async (
-    req: Request,
-    response: Response,
-    next: NextFunction
-) => {
+const verifyJWT = asyncHandler(async (req: Request, _, next: NextFunction) => {
     try {
         const token =
             req.cookies?.accessToken ||
@@ -24,7 +21,6 @@ const verifyJWT = async (
         if (!user) {
             throw new ApiError(401, "Invalid access token");
         }
-
         req.user = user;
         next();
     } catch (error) {
@@ -33,6 +29,6 @@ const verifyJWT = async (
             (error as Error)?.message || "Invalid access token"
         );
     }
-};
+});
 
 export default verifyJWT;

@@ -154,7 +154,7 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
         );
 });
 
-const logoutUser = async (req: Request, res: Response) => {
+const logoutUser = asyncHandler(async (req: Request, res: Response) => {
     const user = await User.findByIdAndUpdate(
         req?.user?._id,
         {
@@ -175,46 +175,50 @@ const logoutUser = async (req: Request, res: Response) => {
         .clearCookie("accessToken", options)
         .clearCookie("refreshToken", options)
         .json(new ApiResponse(200, "User Logged Out", {}));
-};
+});
 
-const refreshAccessToken = async (req: Request, res: Response) => {
-    const incomingRefreshToken =
-        req.cookies.refreshToken || req.body.refreshToken;
-    if (!incomingRefreshToken) {
-        throw new ApiError(400, "Unauthorized Access");
-    }
-    try {
-        const decodedData = jwt.verify(
-            incomingRefreshToken,
-            process.env.REFRESH_TOKEN_SECRET!
-        );
-        if (!decodedData) {
-            throw new ApiError(400, "Invalid Token");
+const refreshAccessToken = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+        const incomingRefreshToken =
+            req.cookies.refreshToken || req.body.refreshToken;
+        if (!incomingRefreshToken) {
+            throw new ApiError(400, "Unauthorized Access");
         }
-        const user = await User.findById((decodedData as TDeRefreshToken)?._id);
-        if (!user) throw new ApiError(400, "User Not Found");
-        if (incomingRefreshToken !== user?.refreshToken) {
-            throw new ApiError(400, "Invalid Token");
-        }
-        const { refreshToken, accessToken } =
-            await generateAccessAndRefreshToken(user?._id);
-        const options = {
-            httpOnly: true,
-            secure: true,
-        };
-        res.status(200)
-            .cookie("accessToken", accessToken, options)
-            .cookie("refreshToken", refreshToken, options)
-            .json(
-                new ApiResponse(200, "Access Token Refreshed ", {
-                    accessToken,
-                    refreshToken,
-                })
+        try {
+            const decodedData = jwt.verify(
+                incomingRefreshToken,
+                process.env.REFRESH_TOKEN_SECRET!
             );
-    } catch (error: any) {
-        throw new ApiError(500, error?.message || "Invalid Token");
+            if (!decodedData) {
+                throw new ApiError(400, "Invalid Token");
+            }
+            const user = await User.findById(
+                (decodedData as TDeRefreshToken)?._id
+            );
+            if (!user) throw new ApiError(400, "User Not Found");
+            if (incomingRefreshToken !== user?.refreshToken) {
+                throw new ApiError(400, "Invalid Token");
+            }
+            const { refreshToken, accessToken } =
+                await generateAccessAndRefreshToken(user?._id);
+            const options = {
+                httpOnly: true,
+                secure: true,
+            };
+            res.status(200)
+                .cookie("accessToken", accessToken, options)
+                .cookie("refreshToken", refreshToken, options)
+                .json(
+                    new ApiResponse(200, "Access Token Refreshed ", {
+                        accessToken,
+                        refreshToken,
+                    })
+                );
+        } catch (error: any) {
+            throw new ApiError(500, error?.message || "Invalid Token");
+        }
     }
-};
+);
 
 const changePassword = asyncHandler(async (req: Request, res: Response) => {
     const { newPassword, oldPassword } = req.body;
@@ -241,6 +245,7 @@ const getCurrentUser = asyncHandler(async (req: Request, res: Response) => {
 const updateAccountDetails = asyncHandler(
     async (req: Request, res: Response) => {
         const { fullName, email } = req.body;
+        console.log(fullName, email);
         if (!(fullName || email)) {
             throw new ApiError(400, "All Fields Are Required");
         }
@@ -311,6 +316,7 @@ const updateCoverImage = asyncHandler(async (req: Request, res: Response) => {
 
 const getUserChannel = asyncHandler(async (req: Request, res: Response) => {
     const { userName } = req.params;
+    console.log(userName);
     if (!userName?.trim()) {
         throw new ApiError(400, "Username Is Required");
     }
@@ -416,10 +422,12 @@ const getWatchHistory = asyncHandler(async (req: Request, res: Response) => {
             },
         },
     ]);
-    if (!user) throw new ApiError(400, "User Not Found");
-    return res
-        .status(200)
-        .json(new ApiResponse(200, "Watch History fetched", user));
+    //@ts-ignore
+    if (!user?.[0]?.watchHistory) throw new ApiError(500, "User Not Found");
+    return res.status(200).json(
+        //@ts-ignore
+        new ApiResponse(200, "Watch History fetched", user[0].watchHistory)
+    );
 });
 
 export {

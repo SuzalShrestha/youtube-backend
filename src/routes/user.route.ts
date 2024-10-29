@@ -33,14 +33,16 @@ router.route("/register").post(
 router.route("/login").post(upload.none(), loginUser);
 router.route("/logout").post(verifyJWT, logoutUser);
 router.route("/refresh").post(refreshAccessToken);
-router.route("/change-password").post(verifyJWT, changePassword);
+router.route("/change-password").post(verifyJWT, upload.none(), changePassword);
 router.route("/current-user").post(verifyJWT, getCurrentUser);
-router.route("/update-account-detail").patch(verifyJWT, updateAccountDetails);
+router
+    .route("/update-account-detail")
+    .patch(verifyJWT, upload.none(), updateAccountDetails);
 router.route("/avatar").patch(verifyJWT, upload.single("avatar"), updateAvatar);
 router
     .route("/cover-image")
     .post(verifyJWT, upload.single("coverImage"), updateCoverImage);
-router.route("/channel").get(verifyJWT, getUserChannel);
+router.route("/c/:userName").get(verifyJWT, getUserChannel);
 router.route("/watch-history").get(verifyJWT, getWatchHistory);
 
 export default router;
