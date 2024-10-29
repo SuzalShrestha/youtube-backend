@@ -1,7 +1,9 @@
 import mongoose, { Schema } from "mongoose";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
-const videoSchema = new Schema(
+import { VideoType } from "../schemas/video.schemas";
+
+const videoSchema = new Schema<VideoType>(
     {
         videoFile: {
             type: String, //cloudinary

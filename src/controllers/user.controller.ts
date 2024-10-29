@@ -34,8 +34,12 @@ const removeFiles = (files: MFiles | undefined) => {
     try {
         console.log("Removing files");
         if (!files) throw new ApiError(500, "Error Removing Files");
-        fs.unlinkSync(files?.avatar[0]?.path);
-        fs.unlinkSync(files?.coverImage[0]?.path);
+        if (fs.existsSync(files?.avatar[0]?.path)) {
+            fs.unlinkSync(files?.avatar[0]?.path);
+        }
+        if (fs.existsSync(files?.coverImage[0]?.path)) {
+            fs.unlinkSync(files?.coverImage[0]?.path);
+        }
     } catch (error) {
         console.error("Error removing files:", error);
     }

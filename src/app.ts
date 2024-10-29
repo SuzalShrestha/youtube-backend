@@ -5,6 +5,7 @@ import express from "express";
 import errorHandler from "./middlewares/error.middleware";
 //routes import
 import userRouter from "./routes/user.route";
+import videoRouter from "./routes/video.route";
 
 const app = express();
 app.use(
@@ -31,5 +32,6 @@ app.get("/", (req, res) => {
     res.send("Hello World!");
 });
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/video", videoRouter);
 app.use(errorHandler);
 export { app };
