@@ -1,6 +1,7 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Request, Response, response } from "express";
 import fs from "fs";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 import { User } from "../models/user.model";
 import { MFiles, MObjectId, TDeRefreshToken } from "../types/express";
@@ -375,6 +376,52 @@ const getUserChannel = asyncHandler(async (req: Request, res: Response) => {
         .json(new ApiResponse(200, "Channel Fetched Successfully", channel[0]));
 });
 
+const getWatchHistory = asyncHandler(async (req: Request, res: Response) => {
+    const user = User.aggregate([
+        {
+            $match: { _id: new mongoose.Types.ObjectId(req.user._id) },
+        },
+        {
+            $lookup: {
+                from: "videos",
+                localField: "watchHistory",
+                foreignField: "_id",
+                as: "watchHistory",
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: "users",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "owner",
+                            pipeline: [
+                                {
+                                    $project: {
+                                        fullName: 1,
+                                        avatar: 1,
+                                        userName: 1,
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            $addFields: {
+                owner: {
+                    $first: "$owner",
+                },
+            },
+        },
+    ]);
+    if (!user) throw new ApiError(400, "User Not Found");
+    return res
+        .status(200)
+        .json(new ApiResponse(200, "Watch History fetched", user));
+});
+
 export {
     registerUser,
     loginUser,
@@ -386,4 +433,5 @@ export {
     updateAvatar,
     updateCoverImage,
     getUserChannel,
+    getWatchHistory,
 };
