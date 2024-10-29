@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response, response } from "express";
+import { NextFunction, Request, Response } from "express";
 import fs from "fs";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
@@ -204,7 +204,7 @@ const refreshAccessToken = async (req: Request, res: Response) => {
         };
         res.status(200)
             .cookie("accessToken", accessToken, options)
-            .cookie("refreshToken", refreshAccessToken, options)
+            .cookie("refreshToken", refreshToken, options)
             .json(
                 new ApiResponse(200, "Access Token Refreshed ", {
                     accessToken,
