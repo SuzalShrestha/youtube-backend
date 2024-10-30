@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import {
+    deleteVideo,
     getAllVideo,
     getVideoById,
     uploadVideo,
@@ -24,5 +25,9 @@ router.route("/upload").post(
     uploadVideo
 );
 router.route("/getAllVideo").get(getAllVideo);
-router.route("/:videoId").get(getVideoById);
+router
+    .route("/:videoId")
+    .get(getVideoById)
+    .patch(uploadVideo)
+    .delete(deleteVideo);
 export default router;
