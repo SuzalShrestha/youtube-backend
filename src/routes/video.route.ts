@@ -1,6 +1,10 @@
 import { Router } from "express";
 
-import { uploadVideo } from "../controllers/video.controller";
+import {
+    getAllVideo,
+    getVideoById,
+    uploadVideo,
+} from "../controllers/video.controller";
 import verifyJWT from "../middlewares/auth.middleware";
 import { upload } from "../middlewares/mutler.middleware";
 
@@ -19,4 +23,6 @@ router.route("/upload").post(
     ]),
     uploadVideo
 );
+router.route("/getAllVideo").get(getAllVideo);
+router.route("/:videoId").get(getVideoById);
 export default router;
