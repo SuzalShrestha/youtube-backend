@@ -25,7 +25,7 @@ const generateAccessAndRefreshToken = async (user_id: MObjectId) => {
         await user.save({ validateBeforeSave: false });
 
         return { accessToken, refreshToken };
-    } catch (err) {
+    } catch {
         throw new ApiError(500, "Something went wrong with generating tokens");
     }
 };
@@ -181,48 +181,45 @@ const logoutUser = asyncHandler(async (req: Request, res: Response) => {
         .json(new ApiResponse(200, "User Logged Out", {}));
 });
 
-const refreshAccessToken = asyncHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
-        const incomingRefreshToken =
-            req.cookies.refreshToken || req.body.refreshToken;
-        if (!incomingRefreshToken) {
-            throw new ApiError(400, "Unauthorized Access");
-        }
-        try {
-            const decodedData = jwt.verify(
-                incomingRefreshToken,
-                process.env.REFRESH_TOKEN_SECRET!
-            );
-            if (!decodedData) {
-                throw new ApiError(400, "Invalid Token");
-            }
-            const user = await User.findById(
-                (decodedData as TDeRefreshToken)?._id
-            );
-            if (!user) throw new ApiError(400, "User Not Found");
-            if (incomingRefreshToken !== user?.refreshToken) {
-                throw new ApiError(400, "Invalid Token");
-            }
-            const { refreshToken, accessToken } =
-                await generateAccessAndRefreshToken(user?._id);
-            const options = {
-                httpOnly: true,
-                secure: true,
-            };
-            res.status(200)
-                .cookie("accessToken", accessToken, options)
-                .cookie("refreshToken", refreshToken, options)
-                .json(
-                    new ApiResponse(200, "Access Token Refreshed ", {
-                        accessToken,
-                        refreshToken,
-                    })
-                );
-        } catch (error: any) {
-            throw new ApiError(500, error?.message || "Invalid Token");
-        }
+const refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
+    const incomingRefreshToken =
+        req.cookies.refreshToken || req.body.refreshToken;
+    if (!incomingRefreshToken) {
+        throw new ApiError(400, "Unauthorized Access");
     }
-);
+    try {
+        const decodedData = jwt.verify(
+            incomingRefreshToken,
+            process.env.REFRESH_TOKEN_SECRET!
+        );
+        if (!decodedData) {
+            throw new ApiError(400, "Invalid Token");
+        }
+        const user = await User.findById((decodedData as TDeRefreshToken)?._id);
+        if (!user) throw new ApiError(400, "User Not Found");
+        if (incomingRefreshToken !== user?.refreshToken) {
+            throw new ApiError(400, "Invalid Token");
+        }
+        const { refreshToken, accessToken } =
+            await generateAccessAndRefreshToken(user?._id);
+        const options = {
+            httpOnly: true,
+            secure: true,
+        };
+        res.status(200)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", refreshToken, options)
+            .json(
+                new ApiResponse(200, "Access Token Refreshed ", {
+                    accessToken,
+                    refreshToken,
+                })
+            );
+    } catch (error) {
+        if (error instanceof Error)
+            throw new ApiError(500, error?.message || "Invalid Token");
+    }
+});
 
 const changePassword = asyncHandler(async (req: Request, res: Response) => {
     const { newPassword, oldPassword } = req.body;
@@ -387,7 +384,7 @@ const getUserChannel = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const getWatchHistory = asyncHandler(async (req: Request, res: Response) => {
-    const user = User.aggregate([
+    const user = await User.aggregate([
         {
             $match: { _id: new mongoose.Types.ObjectId(req.user._id) },
         },
@@ -426,12 +423,13 @@ const getWatchHistory = asyncHandler(async (req: Request, res: Response) => {
             },
         },
     ]);
-    //@ts-ignore
-    if (!user?.[0]?.watchHistory) throw new ApiError(500, "User Not Found");
-    return res.status(200).json(
-        //@ts-ignore
-        new ApiResponse(200, "Watch History fetched", user[0].watchHistory)
-    );
+    if (!user || user.length === 0 || !user[0].watchHistory)
+        throw new ApiError(500, "User Not Found");
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, "Watch History fetched", user[0].watchHistory)
+        );
 });
 
 export {

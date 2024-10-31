@@ -3,12 +3,12 @@ class ApiError extends Error {
     message: string;
     errors: Array<any>;
     data: null;
-    success: Boolean;
+    success: boolean;
 
     constructor(statusCode: number, message: string, errors = [], stack = "") {
         super(message);
         this.statusCode = statusCode;
-        this.errors = this.errors;
+        this.errors = errors;
         this.message = message;
         this.data = null;
         this.success = false;

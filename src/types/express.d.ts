@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-import { UserMethods, UserType } from "../schemas/user.schemas";
+import { UserMethods, UserType } from "../schemas/user.schema";
 
 declare module "express-serve-static-core" {
     interface Request {

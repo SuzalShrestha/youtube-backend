@@ -1,17 +1,17 @@
 {
-  "compilerOptions": {
-    "target": "es6",
-    "module": "CommonJS",
-    "strict": true,
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "types": ["./src/types/express.d.ts"],
-    "strictPropertyInitialization": false,
-    "strictNullChecks": true
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+    "compilerOptions": {
+        "target": "es6",
+        "module": "CommonJS",
+        "strict": true,
+        "esModuleInterop": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "types": ["./src/types/express.d.ts"],
+        "strictPropertyInitialization": false,
+        "strictNullChecks": true
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules"]
 }

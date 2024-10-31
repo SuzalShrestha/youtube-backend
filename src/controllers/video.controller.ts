@@ -22,7 +22,7 @@ const uploadVideo = asyncHandler(async (req: Request, res: Response) => {
             "upload/f_jpg/g_auto,g_auto"
         );
     } else {
-        let response = await uploadOnCloudinary(thumbnailLocalPath);
+        const response = await uploadOnCloudinary(thumbnailLocalPath);
         thumbnail = response?.url;
     }
 
@@ -45,7 +45,7 @@ const getAllVideo = asyncHandler(async (req: Request, res: Response) => {
     const {
         page = "1",
         limit = "10",
-        query, //for searching using title or description
+        // query, //for searching using title or description
         sortBy = "duration",
         sortType = "asc",
         userId,
