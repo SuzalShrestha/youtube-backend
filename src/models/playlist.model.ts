@@ -1,6 +1,8 @@
 import mongoose, { Schema } from "mongoose";
 
-const playlistSchema = new Schema(
+import { PlaylistType } from "../schemas/playlist.schema";
+
+const playlistSchema = new Schema<PlaylistType>(
     {
         name: {
             type: String,

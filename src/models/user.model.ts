@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import mongoose, { Schema } from "mongoose";
 
-import { UserMethods, UserType } from "../schemas/user.schemas";
+import { UserMethods, UserType } from "../schemas/user.schema";
 
 const userSchema = new Schema<UserType & UserMethods>(
     {

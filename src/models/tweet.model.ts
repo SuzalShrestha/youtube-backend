@@ -1,6 +1,8 @@
 import mongoose, { Schema } from "mongoose";
 
-const tweetSchema = new Schema(
+import { TweetType } from "../schemas/tweet.schema";
+
+const tweetSchema = new Schema<TweetType>(
     {
         content: {
             type: String,

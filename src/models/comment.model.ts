@@ -1,6 +1,8 @@
 import mongoose, { Schema } from "mongoose";
 
-const commentSchema = new Schema(
+import { CommentType } from "../schemas/comment.schema";
+
+const commentSchema = new Schema<CommentType>(
     {
         content: {
             type: String,

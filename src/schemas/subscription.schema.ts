@@ -1,6 +1,6 @@
 import { IObjectId, TObjectId } from "../types/express";
 
-export interface TSubscription extends IObjectId {
+export interface SubscriptionType extends IObjectId {
     channel: TObjectId;
     subscriber: TObjectId;
 }
