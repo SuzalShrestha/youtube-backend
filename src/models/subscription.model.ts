@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 
-const subscriptionSchema = new mongoose.Schema(
+import { TSubscription } from "../schemas/subscription.schemas";
+
+const subscriptionSchema = new mongoose.Schema<TSubscription>(
     {
         channel: {
             type: mongoose.Schema.Types.ObjectId,

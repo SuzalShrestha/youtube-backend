@@ -37,3 +37,7 @@ declare global {
         }
     }
 }
+export interface IObjectId {
+    _id: mongoose.Types.ObjectId;
+}
+export type TObjectId = mongoose.Types.ObjectId;
