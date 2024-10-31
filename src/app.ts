@@ -4,6 +4,7 @@ import express from "express";
 
 import errorHandler from "./middlewares/error.middleware";
 //routes import
+import subscriptionRouter from "./routes/subscription.route";
 import userRouter from "./routes/user.route";
 import videoRouter from "./routes/video.route";
 
@@ -33,5 +34,6 @@ app.get("/", (req, res) => {
 });
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/video", videoRouter);
+app.use("/api/v1/subscription", subscriptionRouter);
 app.use(errorHandler);
 export { app };
