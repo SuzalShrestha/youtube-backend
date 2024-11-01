@@ -82,7 +82,7 @@ const getVideoById = asyncHandler(async (req: Request, res: Response) => {
 const updateVideo = asyncHandler(async (req: Request, res: Response) => {
     const { videoId } = req.params;
     const { title, description, thumbnail } = req.body;
-    if (!(title | description | thumbnail))
+    if (!(title || description || thumbnail))
         throw new ApiError(400, "All Fields are required");
     const video = await Video.findByIdAndUpdate(
         videoId,
