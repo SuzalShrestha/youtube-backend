@@ -1,3 +1,4 @@
+import { ok } from "assert";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 
@@ -93,10 +94,39 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
         );
 });
 
+const deletePlaylist = asyncHandler(async (req, res) => {
+    const { playlistId } = req.params;
+    if (!playlistId) throw new ApiError(400, "Field Are Required");
+    const playlist = await Playlist.findByIdAndDelete(playlistId);
+    if (!playlist) throw new ApiError(400, "Invalid Playlist Id");
+    return res
+        .status(200)
+        .json(new ApiResponse(200, "Delete Playlist Successful", playlist));
+});
+
+const updatePlaylist = asyncHandler(async (req, res) => {
+    const { playlistId } = req.params;
+    const { name, description, videos, owner } = req.body;
+    if (!(name || description || playlistId))
+        throw new ApiError(400, "Fields Are Required");
+    const playlist = await Playlist.findByIdAndUpdate({
+        name,
+        description,
+        videos,
+        owner,
+    });
+    if (!playlist) throw new ApiError(400, "Invalid Playlist Id");
+    return res
+        .status(200)
+        .json(new ApiResponse(200, "Playlist Update Successful", playlist));
+});
+
 export {
     createPlaylist,
     getUserPlaylists,
     getPlaylistById,
     addVideoToPlaylist,
     removeVideoFromPlaylist,
+    deletePlaylist,
+    updatePlaylist,
 };
