@@ -1,9 +1,12 @@
 {
+    "name": "youtube-backend",
+    "version": "1.0.0",
     "scripts": {
         "dev": "nodemon ./src/index.ts",
         "start": "ts-node ./src/index.ts",
         "lint": "eslint .",
-        "format": "prettier --write ."
+        "format": "prettier --write .",
+        "preinstall": "npx only-allow pnpm"
     },
     "dependencies": {
         "bcrypt": "^5.1.1",

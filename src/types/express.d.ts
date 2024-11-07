@@ -2,26 +2,15 @@ import mongoose from "mongoose";
 
 import { UserMethods, UserType } from "../schemas/user.schema";
 
-declare module "express-serve-static-core" {
-    interface Request {
-        user: UserType & UserMethods;
-        files?: { [key: string]: Express.Multer.File[] };
-        file?: Express.Multer.File;
-    }
-}
-
-export type MFiles = { [key: string]: Express.Multer.File[] };
-export type MObjectId = mongoose.Types.ObjectId;
-export type TDeAccessToken = {
-    _id: mongoose.Types.ObjectId;
-    userName: string;
-    email: string;
-    fullName: string;
-};
-export type TDeRefreshToken = {
-    _id: mongoose.Types.ObjectId;
-};
 declare global {
+    namespace Express {
+        interface Request {
+            user?: UserType & UserMethods;
+            files?: { [key: string]: Express.Multer.File[] };
+            file?: Express.Multer.File;
+        }
+    }
+
     namespace NodeJS {
         interface ProcessEnv {
             PORT: string;
@@ -37,6 +26,18 @@ declare global {
         }
     }
 }
+
+export type MFiles = { [key: string]: Express.Multer.File[] };
+export type MObjectId = mongoose.Types.ObjectId;
+export type TDeAccessToken = {
+    _id: mongoose.Types.ObjectId;
+    userName: string;
+    email: string;
+    fullName: string;
+};
+export type TDeRefreshToken = {
+    _id: mongoose.Types.ObjectId;
+};
 export interface IObjectId {
     _id: mongoose.Types.ObjectId;
 }
